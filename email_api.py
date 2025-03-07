@@ -5,8 +5,18 @@ from starlette.middleware.sessions import SessionMiddleware
 import pandas as pd
 import sendgrid
 from sendgrid.helpers.mail import Mail
+import os
+import uvicorn
 
 app = FastAPI()
+
+@app.get("/")
+def home():
+    return {"message": "🚀 FastAPI is live on Railway!"}
+
+if __name__ == "__main__":
+    port = int(os.getenv("PORT", 8000))  # Default to 8000 if no PORT is set
+    uvicorn.run(app, host="0.0.0.0", port=port)
 
 # ✅ Session Middleware for Authentication
 app.add_middleware(SessionMiddleware,
