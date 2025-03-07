@@ -4,4 +4,10 @@ version = "0.1.0"
 description = ""
 authors = ["Your Name <you@example.com>"]
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "fastapi>=0.115.11",
+    "pandas>=2.2.3",
+    "pyngrok>=7.2.3",
+    "sendgrid>=6.11.0",
+    "starlette>=0.46.0",
+]
