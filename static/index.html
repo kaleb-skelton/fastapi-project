@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Sender</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="logo-container">
+        <img src="/static/logo.png" alt="Business Logo" class="logo">
+    </div>
+
+    <div class="header">
+        <h1>Email Sender</h1>
+    </div>
+
+    <div class="container">
+        <p>Select an email type and quantity, then press send.</p>
+
+        <label for="emailType">Select Email Type:</label>
+        <select id="emailType">
+            <option value="Intro">Intro</option>
+            <option value="Follow-Up">Follow-Up</option>
+        </select>
+
+        <label for="maxEmails">Select Number of Emails:</label>
+        <select id="maxEmails">
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="25">25</option>
+        </select>
+
+        <button id="sendEmail">Send Emails</button>
+        <button onclick="window.location.href='/logout'">Logout</button>
+
+        <textarea id="emailLog" readonly placeholder="Email logs will appear here..."></textarea>
+    </div>
+
+    <script>
+        document.getElementById("sendEmail").addEventListener("click", async function () {
+            let emailType = document.getElementById("emailType").value;
+            let maxEmails = document.getElementById("maxEmails").value;
+
+            const response = await fetch("/send_email", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email_type: emailType, max_emails: maxEmails })
+            });
+
+            const data = await response.json();
+            document.getElementById("emailLog").value += data.message + "\n";
+        });
+    </script>
+
+</body>
+</html>
