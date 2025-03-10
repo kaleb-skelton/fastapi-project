@@ -178,8 +178,19 @@ input {
     outline: none;
 }
 
+/* ❌ Disable scrolling on all pages by default */
+body {
+    overflow: hidden;
+}
+
+/* ✅ Enable scrolling ONLY on index.html */
+body.index-page {
+    overflow: auto;
+}
+
+
+
 html, body {
- overflow: hidden;
  height: 100vh;
  margin: 0;
  padding: 0;
