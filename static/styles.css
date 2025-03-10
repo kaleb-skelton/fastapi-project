@@ -142,24 +142,40 @@ input:checked + .slider:before {
     width: 90%;
     max-width: 500px;
     height: 35%;
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 .logo-container {
     text-align: center;
- 
+    margin-bottom: 10px; /* Adjust spacing */
+    position: absolute;
+    top: 300px; /* Moves it up */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 0; /* Keeps it above everything */
 }
 
 .logo {
-    width: auto;
-    height: auto;
+    width: 400px;
+    height: 400px;
     display: block;
     margin: 0 auto;
+    
+    clip-path: inset(40% 10% 20% 5%);
 }
-
+/* ✅ Ensure inputs stack vertically */
 input {
-    text-align: center;
-    margin-bottom: 5px;
-    border-radius: 8px;
+    width: 94%;
+    padding: 12px;
+    margin: 10px 0;  /* Adds spacing between username and password */
+    display: block;   /* Ensures inputs don't appear side by side */
+    border-radius: 8px; /* Rounded corners */
+    border: 1px solid #ccc;
+    font-size: 16px;
+    outline: none;
 }
 
 html, body {
