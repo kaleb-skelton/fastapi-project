@@ -54,12 +54,21 @@
             const data = await response.json();
             document.getElementById("emailLog").value += data.message + "\n";
         });
+        <script>
+            fetch("/").then(response => {
+                if (response.redirected) {
+                    window.location.href = response.url;  // ✅ Redirect if not logged in
+                }
+            });
+        </script>
+
     </script>
   
 
   <a href="/download_csv" download>
     <button id="downloadCsvBtn">📥 Download CSV</button>
 </a>
+
 
 
 </body>

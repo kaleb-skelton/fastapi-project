@@ -9,8 +9,16 @@ from starlette.middleware.sessions import SessionMiddleware
 
 app = FastAPI()
 
-# ✅ Add session middleware for authentication
-app.add_middleware(SessionMiddleware, secret_key="supersecretkey")
+app.add_middleware(
+    SessionMiddleware,
+    secret_key="supersecretkey",
+    session_cookie="email_app_session",
+    same_site="none",  # ✅ Fixes session clearing on redirects
+    max_age=86400,  # ✅ Keeps session for 24 hours
+    https_only=False  # ✅ Change to True if using HTTPS
+)
+
+
 
 # ✅ Serve static files (HTML, CSS, Images)
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -30,6 +38,18 @@ TEMPLATES = {
 
 CSV_FILE = "email_list_fixed.csv"  # ✅ Ensure this CSV file exists
 
+@app.get("/")
+async def home(request: Request):
+    user = request.session.get("user")  # ✅ Check if user is logged in
+
+    if not user:
+        print("🚨 No session found. Redirecting to login.")  # Debugging
+        return RedirectResponse(url="/login", status_code=302)  # ✅ Redirect to login
+
+    print(f"✅ Session found. User '{user}' is logged in.")  # Debugging
+    return FileResponse("static/index.html")  # ✅ Show dashboard if logged in
+
+
 
 @app.get("/download_csv")
 async def download_csv():
@@ -40,18 +60,22 @@ def login_page():
     return FileResponse("static/login.html")
 
 
-# ✅ Handle Login Submission
 @app.post("/login")
-async def login(request: Request,
-                username: str = Form(...),
-                password: str = Form(...)):
+async def login(request: Request, username: str = Form(...), password: str = Form(...)):
     if username in USERS and USERS[username] == password:
-        request.session["user"] = username  # ✅ Store user in session
-        return RedirectResponse("/",
-                                status_code=303)  # ✅ Redirect to email sender
+        request.session["user"] = username  # ✅ Store user session
+        print(f"✅ Login successful: {username}")  # Debugging
 
-    return JSONResponse({"error": "Invalid credentials"},
-                        status_code=401)  # ✅ Show login error
+        # ✅ Check if session is stored
+        print("Current Session Data:", request.session)
+
+        return RedirectResponse(url="/", status_code=303)  # ✅ Redirect to dashboard
+
+    print("🚨 Invalid login attempt.")  # Debugging
+    return JSONResponse({"error": "Invalid credentials"}, status_code=401)
+
+
+
 
 
 # ✅ Logout Route
@@ -62,13 +86,14 @@ async def logout(request: Request):
 
 
 # ✅ Protect the Email Sender Page (Only for Logged-in Users)
-@app.get("/")
 async def home(request: Request):
-    if "user" not in request.session:
-        return RedirectResponse(
-            "/login")  # ✅ Redirect unauthorized users to login
+    user = request.session.get("user")  # ✅ Get user from session
 
-    return FileResponse("static/index.html")  # ✅ Serve email sender page
+    if not user:
+        return RedirectResponse(url="/login", status_code=302)  # ✅ Force browser redirect
+
+    return FileResponse("static/index.html")  # ✅ Show dashboard if logged in
+
 
 
 # ✅ Send Emails with SendGrid
