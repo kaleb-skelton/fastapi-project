@@ -18,8 +18,9 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # ✅ Dummy user credentials (Replace with database later)
 USERS = {"admin": "password123"}
 
-# ✅ SendGrid API Key (Replace with environment variable for security)
-SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
+# ✅ Securely load SendGrid API Key from environment variables
+SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")  # ✅ Fixed issue
+
 # ✅ Email Templates (Replace with actual SendGrid template IDs)
 TEMPLATES = {
     "Intro": "d-00db22748548459f8a86e14049fbf25f",
@@ -30,6 +31,9 @@ TEMPLATES = {
 CSV_FILE = "email_list_fixed.csv"  # ✅ Ensure this CSV file exists
 
 
+@app.get("/download_csv")
+async def download_csv():
+    return FileResponse("email_list_fixed.csv", media_type="text/csv", filename="email_list_fixed.csv")
 # ✅ Serve the Login Page
 @app.get("/login")
 def login_page():
@@ -67,60 +71,69 @@ async def home(request: Request):
     return FileResponse("static/index.html")  # ✅ Serve email sender page
 
 
-# ✅ Email Sending Route (Requires Login)
+# ✅ Send Emails with SendGrid
 @app.post("/send_email")
 async def send_email(request: Request):
     if "user" not in request.session:
-        return JSONResponse({"error": "Unauthorized"},
-                            status_code=401)  # ✅ Block unauthorized users
+        return JSONResponse({"error": "Unauthorized"}, status_code=401)
 
     data = await request.json()
     email_type = data.get("email_type")
     max_emails = int(data.get("max_emails", 5))
 
-    df = pd.read_csv(CSV_FILE)
-
-    # ✅ Filter emails that haven’t been sent
+    df = pd.read_csv("email_list_fixed.csv")
     rows = df[df["Sent"] != "Sent"] if email_type == "Intro" else df[
         df["F/U Sent"] != "Follow-Up Sent"]
+
     emails_sent = 0
+    failure_count = 0
+    max_failures = 3  # Stop after 3 failures
+
     sg = sendgrid.SendGridAPIClient(api_key=SENDGRID_API_KEY)
 
     for index, row in rows.iterrows():
-        if emails_sent >= max_emails:
-            break
+        if emails_sent >= max_emails or failure_count >= max_failures:
+            break  # ✅ Stop sending if too many failures
 
-        recipient_email = row["Email Address"]
+        recipient_email = row["Email Address"].strip()  # ✅ Remove extra spaces
         subject_line = f"{row['Customer Name']} - {row['Office Name']}"
 
-        # ✅ Choose the correct email template
-        if email_type == "Follow-Up":
-            offer_type = row["OFFER RECC"]
-            if offer_type == "Offer FPCO":
-                template_id = TEMPLATES["Follow-Up FPCO"]
-            elif offer_type == "Offer AIR Upgrade":
-                template_id = TEMPLATES["Follow-Up Pest Plan"]
-            else:
-                continue
-        else:
-            template_id = TEMPLATES["Intro"]
+        # ✅ Ensure email type exists in templates
+        template_id = TEMPLATES.get(email_type)
+        if not template_id:
+            print(f"🚨 Invalid email type: {email_type}")
+            continue  # Skip if template is invalid
 
-        # ✅ Construct Email with CC to `kskelton@ecoteam.com`
         message = Mail(
-            from_email="your-email@domain.com",  # ✅ Replace with your email
-            to_emails=To(recipient_email))
-        message.add_cc(Cc("kskelton@ecoteam.com"))  # ✅ CC you on all emails
+            from_email="kskelton@ecoteam.com",
+            to_emails=recipient_email  # ✅ Only add recipient here
+        )
+
+        # ✅ Now add CC separately:
+        message.add_cc("kskelton@ecoteam.com")
+
+        # ✅ Set Template ID
         message.template_id = template_id
+
+        # ✅ Pass dynamic data (subject)
         message.dynamic_template_data = {"subject": subject_line}
 
         try:
-            sg.send(message)  # ✅ Send the email
-            df.at[index,
-                  "Sent" if email_type == "Intro" else "F/U Sent"] = "Sent"
+            response = sg.send(message)  # ✅ Attempt to send email
+            print(f"✅ Email sent to {recipient_email}: {response.status_code}"
+                  )  # ✅ Debugging log
+            df.at[index, "Sent"] = "Sent"
             emails_sent += 1
         except Exception as e:
-            print(f"❌ Email failed to {recipient_email}: {str(e)}")
+            print(f"❌ Email failed to {recipient_email}: {str(e)}"
+                  )  # ✅ Log failure
+            if hasattr(e, 'body'):
+                print("📌 Full Error Response:",
+                      e.body)  # ✅ Show full SendGrid response
+            failure_count += 1  # Count failures
+            if failure_count >= max_failures:
+                print("🚨 Too many failures! Stopping email sending.")
+                break  # ✅ Stop sending if max failures reached
 
-    df.to_csv(CSV_FILE, index=False)  # ✅ Save updated CSV
-    return JSONResponse(
-        {"message": f"✅ {emails_sent} {email_type} emails sent!"})
+    df.to_csv("email_list_fixed.csv", index=False)
+    return JSONResponse({"message": f"✅ {emails_sent} emails sent!"})

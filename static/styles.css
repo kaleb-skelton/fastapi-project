@@ -185,3 +185,16 @@ html, body {
  padding: 0;
  touch-action: none
 }
+#downloadCsvBtn {
+    background-color: #28a745;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+#downloadCsvBtn:hover {
+    background-color: #218838;
+}
