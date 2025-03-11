@@ -209,3 +209,56 @@ html, body {
 #downloadCsvBtn:hover {
     background-color: #218838;
 }
+/* ✅ Hamburger Menu Styling */
+.hamburger-menu {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.hamburger-icon {
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: white;
+}
+
+/* ✅ Hidden by default */
+.menu-links {
+    display: none;
+    position: absolute;
+    top: 40px;
+    right: 0;
+    background-color: #1c1c1e;
+    border-radius: 8px;
+    width: 180px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* ✅ Show menu when class is active */
+.show-menu {
+    display: block !important;
+}
+
+.menu-links a {
+    display: block;
+    padding: 12px;
+    text-decoration: none;
+    color: white;
+    text-align: center;
+    transition: 0.3s;
+}
+
+.menu-links a:hover {
+    background-color: #0071e3;
+}
+
+/* ✅ Logout Button */
+.logout-btn {
+    font-weight: bold;
+    color: white;
+    background-color: red;
+}
+

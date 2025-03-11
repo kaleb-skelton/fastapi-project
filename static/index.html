@@ -8,10 +8,37 @@
 </head>
 <body>
     <body class="index-page">
+        <!-- ✅ Hamburger Menu -->
+        <div class="hamburger-menu">
+            <button class="hamburger-icon" onclick="toggleMenu()">☰</button>
+            <div id="menuLinks" class="menu-links">
+                <a href="/dashboard">🏠 Dashboard</a>
+                <a href="/">📧 Email Sender</a>
+                <a href="/send_flyer">📢 Send Flyers</a>
+                <a href="/directory">📂 Directory</a>
+                <a href="/logout" class="logout-btn">🚪 Logout</a>
+            </div>
+        </div>
 
     <script>
         // ✅ Re-enable scrolling when on index.html
         document.body.style.overflow = "auto";
+        function toggleMenu() {
+            var menu = document.getElementById("menuLinks");
+            menu.classList.toggle("show-menu");
+        }
+
+        // ✅ Close menu when clicking outside
+        document.addEventListener("click", function (event) {
+            var menu = document.getElementById("menuLinks");
+            var button = document.querySelector(".hamburger-icon");
+
+            if (!menu.contains(event.target) && !button.contains(event.target)) {
+                menu.classList.remove("show-menu");
+            }
+        });
+
+
     </script>
     <div class="logo-container">
         <img src="/static/logo.png" alt="Business Logo" class="logo">
@@ -66,7 +93,7 @@
                     window.location.href = response.url;  // ✅ Redirect if not logged in
                 }
             });
-        </script>
+       
 
     </script>
   

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Seasonal Treatment Flyer</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <!-- ✅ Hamburger Menu -->
+    <div class="hamburger-menu">
+        <button class="hamburger-icon" onclick="toggleMenu()">☰</button>
+        <div id="menuLinks" class="menu-links">
+            <a href="/dashboard">🏠 Dashboard</a>
+            <a href="/">📧 Email Sender</a>
+            <a href="/send_flyer">📢 Send Flyers</a>
+            <a href="/directory">📂 Directory</a>
+            <a href="/logout" class="logout-btn">🚪 Logout</a>
+        </div>
+    </div>
+
+    <h1>📩 Send Seasonal Treatment Flyer</h1>
+
+    <form id="flyerForm" enctype="multipart/form-data">
+        <label for="flyer">Upload Flyer (PDF):</label>
+        <input type="file" id="flyer" name="flyer" accept=".pdf" required>
+
+        <label for="branch">Select Branch:</label>
+        <select id="branch" name="branch">
+            <option value="all">📌 Send to All Properties</option>
+            <option value="Ecoteam DFW">🏢 Ecoteam DFW</option>
+            <option value="Ecoteam Austin">🌆 Ecoteam Austin</option>
+            <option value="Ecoteam San Antonio">🏙️ Ecoteam San Antonio</option>
+            <option value="Ecoteam Houston">🌃 Ecoteam Houston</option>
+        </select>
+
+        <!-- ✅ Button to Open Email Editor -->
+        <button type="button" onclick="openEmailModal()">✍️ Write Email</button>
+    </form>
+
+    <!-- ✅ Email Editor Modal -->
+    <div id="emailModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeEmailModal()">&times;</span>
+            <h2>✍️ Edit Email Before Sending</h2>
+            <label for="emailSubject">Subject:</label>
+            <input type="text" id="emailSubject" value="🌿 Seasonal Treatment Update">
+
+            <label for="emailBody">Email Content:</label>
+            <textarea id="emailBody" rows="5">
+Dear [Customer Name],
+
+We are pleased to provide an update on your seasonal treatment service.
+
+Please find the attached flyer with details on our latest treatment schedule and recommendations.
+
+If you have any questions, feel free to reach out.
+
+Best regards,
+Ecoteam Services
+📧 support@ecoteam.com
+📞 (512) 201-4100
+            </textarea>
+
+            <button onclick="sendFlyer()">🚀 Send Flyer</button>
+        </div>
+    </div>
+
+    <p id="responseMessage"></p>
+
+    <script>
+        function openEmailModal() {
+            document.getElementById("emailModal").style.display = "block";
+        }
+
+        function closeEmailModal() {
+            document.getElementById("emailModal").style.display = "none";
+        }
+
+        async function sendFlyer() {
+            let formData = new FormData();
+            formData.append("flyer", document.getElementById("flyer").files[0]);
+            formData.append("branch", document.getElementById("branch").value);
+            formData.append("subject", document.getElementById("emailSubject").value);
+            formData.append("body", document.getElementById("emailBody").value);
+
+            const response = await fetch("/send_flyer", {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await response.json();
+            document.getElementById("responseMessage").textContent = data.message || data.error;
+            closeEmailModal(); // Close modal after sending
+        }
+        
+            function toggleMenu() {
+                var menu = document.getElementById("menuLinks");
+                menu.classList.toggle("show-menu");
+            }
+
+            // ✅ Close menu when clicking outside
+            document.addEventListener("click", function (event) {
+                var menu = document.getElementById("menuLinks");
+                var button = document.querySelector(".hamburger-icon");
+
+                if (!menu.contains(event.target) && !button.contains(event.target)) {
+                    menu.classList.remove("show-menu");
+                }
+            });
+        
+
+    </script>
+
+    <style>
+        /* ✅ Modal Styling */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            color: #333;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 50%;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+        }
+    </style>
+</body>
+</html>
